@@ -42,7 +42,7 @@ def generate_random_contact():
     fixed_prefix = "" # 앞자리 고정
     return fixed_prefix 
 
-# 랜덤 이메일 생성 함수(영어 + 숫자)
+# 랜덤 이메일 생성 함수(영어 + 숫자).
 def generate_random_email():
     prefix = ''.join(random.choice(string.ascii_letters + string.digits)for _ in range(5))
     domain = "seowoninfo.com"
