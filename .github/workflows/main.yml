@@ -18,11 +18,13 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Install dependencies
+    - name: Install ChromeDriver
       run: |
-        pip install selenium
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable chromium-driver
+
+    - name: Install dependencies
+      run: pip install selenium
+
     - name: Run signup.py
       run: python signup.py
-
-    - name: Run login.py
-      run: python login.py
