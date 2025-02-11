@@ -60,13 +60,6 @@ def generate_random_email():
     domain = "seowoninfo.com"
     return f"{prefix}@{domain}"
     
-    
-
-    
-
-
-
-
 # 공통 요소 함수
 def wait_and_click(driver, by, value):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((by, value))).click()
@@ -96,7 +89,6 @@ def click_approval_buttons(drvier):
     except Exception as e:
         print("실패")
  
-
 try:
     # 회원가입 버튼 클릭
     wait_and_click(driver, By.XPATH, "//a[@href='/auth/sign-up']")
@@ -166,7 +158,6 @@ try:
     wait_and_click(driver, By.XPATH, "//input[@type='checkbox']")
    # 승인 버튼 클릭 (팝업 포함)
     click_approval_buttons(driver)
-
     print("✅ 가입 요청 승인 완료")
 
 
@@ -177,8 +168,6 @@ try:
     wait_and_click(driver, By.XPATH, "//span[contains(text(), '로그아웃')]")
     wait_and_click(driver, By.XPATH, "//span[contains(text(), '확인')]")
     print("✅ 관리자 계정 로그아웃 완료")
-
-    
     
     #회원가입한 계정 정보 저장
     signed_up_id = random_id
@@ -189,7 +178,6 @@ try:
     wait_and_send_keys(driver, By.ID, "password", signed_up_password)
     wait_and_click(driver, By.XPATH, "//button[@type='submit']")
     print("✅ 회원가입한 계정 로그인 성공")
-
 
 except Exception as e:
     print(f"오류 발생: {e}")
