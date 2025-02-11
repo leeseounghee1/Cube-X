@@ -18,24 +18,26 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Force Add Cube-X domain to /etc/hosts
+      - name: Add Cube-X domain to /etc/hosts (Force)
         run: |
           echo "🔍 /etc/hosts 강제 추가"
           echo "61.251.164.234 cubex.seowoninfo.com" | sudo tee -a /etc/hosts
-          sudo systemctl restart networking || echo "네트워크 재시작 실패, 무시하고 진행"
-
           echo "🔍 /etc/hosts 파일 내용 확인"
           cat /etc/hosts
+
+          echo "🔍 DNS 캐시 강제 초기화"
+          sudo systemctl restart systemd-resolved || sudo systemctl restart networking || echo "DNS 캐시 초기화 실패"
+          resolvectl flush-caches || echo "DNS 캐시 플러시 실패"
 
       - name: Full Network Diagnosis
         run: |
           echo "🔍 네트워크 및 DNS 테스트 시작"
 
           echo "🔍 DNS 확인 (dig)"
-          dig cubex.seowoninfo.com
+          dig cubex.seowoninfo.com || echo "❌ DNS 조회 실패"
 
           echo "🔍 DNS 확인 (nslookup)"
-          nslookup cubex.seowoninfo.com
+          nslookup cubex.seowoninfo.com || echo "❌ nslookup 실패"
 
           echo "🔍 IP 및 포트 체크 (ping)"
           ping -c 4 cubex.seowoninfo.com || echo "❌ Ping 실패"
@@ -44,7 +46,10 @@ jobs:
           traceroute cubex.seowoninfo.com || echo "❌ Traceroute 실패"
 
           echo "🔍 HTTP 연결 확인 (curl -v)"
-          curl -v https://cubex.seowoninfo.com/auth || echo "❌ Curl 실패"
+          curl -v --resolve cubex.seowoninfo.com:443:61.251.164.234 https://cubex.seowoninfo.com/auth || echo "❌ Curl 실패"
+
+          echo "🔍 직접 연결 시도 (wget --spider)"
+          wget --spider https://cubex.seowoninfo.com/auth || echo "❌ Website is not reachable"
 
           echo "🔍 443 포트 열려 있는지 확인 (telnet)"
           (echo quit | telnet cubex.seowoninfo.com 443) || echo "❌ 443 포트 닫힘"
@@ -60,7 +65,7 @@ jobs:
       - name: Check Website Availability before running Selenium
         run: |
           echo "🔍 Cube-X 서버 최종 점검"
-          if curl -s --head https://cubex.seowoninfo.com/auth | grep "200 OK" > /dev/null; then
+          if curl -s --head --resolve cubex.seowoninfo.com:443:61.251.164.234 https://cubex.seowoninfo.com/auth | grep "200 OK" > /dev/null; then
             echo "✅ 사이트 접근 가능, Selenium 실행 가능"
           else
             echo "❌ 사이트 접근 불가, 네트워크 문제 발생"
