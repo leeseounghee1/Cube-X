@@ -18,14 +18,32 @@ jobs:
         with:
           python-version: 3.8
 
+      - name: Add Cube-X domain to /etc/hosts
+        run: |
+          echo "61.251.164.234 cubex.seowoninfo.com" | sudo tee -a /etc/hosts
+          cat /etc/hosts  # Debugging: hosts 파일이 정상적으로 추가되었는지 확인
+
+      - name: Test Network Connectivity
+        run: |
+          ping -c 4 cubex.seowoninfo.com || echo "DNS Resolution Failed"
+          curl -I https://cubex.seowoninfo.com/auth || echo "Website Unreachable"
+
       - name: Install Chrome
         run: |
           sudo apt update
           sudo apt install -y google-chrome-stable
 
       - name: Install dependencies
-        run: pip install selenium chromedriver-autoinstaller
+        run: pip install selenium chromedriver-autoinstaller requests
+
+      - name: Check Website Availability before running Selenium
+        run: |
+          if curl -s --head https://cubex.seowoninfo.com/auth | grep "200 OK" > /dev/null; then
+            echo "✅ 사이트 접근 가능, Selenium 실행 가능"
+          else
+            echo "❌ 사이트 접근 불가, Selenium 실행을 중단합니다."
+            exit 1
+          fi
 
       - name: Run signup.py
         run: python signup.py
-
