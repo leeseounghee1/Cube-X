@@ -21,12 +21,22 @@ jobs:
       - name: Add Cube-X domain to /etc/hosts
         run: |
           echo "61.251.164.234 cubex.seowoninfo.com" | sudo tee -a /etc/hosts
+          echo "🔍 /etc/hosts 내용 확인:"
           cat /etc/hosts  # Debugging: hosts 파일이 정상적으로 추가되었는지 확인
 
       - name: Test Network Connectivity
         run: |
-          ping -c 4 cubex.seowoninfo.com || echo "DNS Resolution Failed"
-          curl -I https://cubex.seowoninfo.com/auth || echo "Website Unreachable"
+          echo "🔍 DNS 확인 (nslookup)"
+          nslookup cubex.seowoninfo.com || echo "❌ DNS Resolution Failed"
+
+          echo "🔍 사이트 접속 테스트 (ping)"
+          ping -c 4 cubex.seowoninfo.com || echo "❌ Ping 실패"
+
+          echo "🔍 사이트 상태 확인 (curl -I)"
+          curl -I https://cubex.seowoninfo.com/auth || echo "❌ Website Unreachable"
+
+          echo "🔍 직접 연결 시도 (wget --spider)"
+          wget --spider https://cubex.seowoninfo.com/auth || echo "❌ Website is not reachable"
 
       - name: Install Chrome
         run: |
