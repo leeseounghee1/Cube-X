@@ -1,7 +1,7 @@
 name: Run signup.py and login.py on schedule
 
 on:
-  workflow_dispatch:  # 수동 실행 추가
+  workflow_dispatch:  # ✅ 수동 실행 추가
   schedule:
     - cron: '0 10 * * *'  # 매일 오전 10시 실행
 
@@ -22,11 +22,18 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y wget unzip google-chrome-stable
-          
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
-          DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION)
-          
-          wget -N https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip
+
+          # ✅ 최신 Chrome 버전 가져오기
+          CHROME_VERSION=$(google-chrome --version | grep -oP '[0-9.]+' | head -1)
+
+          # ✅ Chrome 메이저 버전 추출 (예: 132)
+          CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d. -f1)
+
+          # ✅ Chromedriver 최신 버전 확인 후 다운로드
+          DRIVER_VERSION=$(curl -sS "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAJOR_VERSION")
+
+          # ✅ Chromedriver 다운로드 및 설치
+          wget -N "https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip"
           unzip chromedriver_linux64.zip
           sudo mv chromedriver /usr/bin/chromedriver
           sudo chmod +x /usr/bin/chromedriver
@@ -36,3 +43,4 @@ jobs:
 
       - name: Run signup.py
         run: python signup.py
+
