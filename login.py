@@ -1,3 +1,4 @@
+import requests
 import chromedriver_autoinstaller
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -5,9 +6,32 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import os
 
-# ✅ Chromedriver 자동 설치
-chromedriver_autoinstaller.install()
+# ✅ 사이트 접근 가능 여부 확인 함수
+def check_website_availability(url):
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            print(f"✅ 사이트 접근 가능: {url}")
+            return True
+        else:
+            print(f"❌ 사이트 응답 오류: {response.status_code}")
+            return False
+    except requests.exceptions.RequestException as e:
+        print(f"❌ 사이트 접근 불가: {e}")
+        return False
+
+# ✅ 실행할 웹사이트
+URL = 'https://cubex.seowoninfo.com/auth'
+
+# ✅ 네트워크 연결 확인 후 WebDriver 실행
+if not check_website_availability(URL):
+    print("❌ 사이트에 연결할 수 없어 테스트를 중단합니다.")
+    exit(1)  # 오류 코드 반환하여 CI/CD 실패 처리
+
+# ✅ Chromedriver 자동 설치 (명확한 경로 지정)
+chromedriver_autoinstaller.install(path=os.getcwd())
 
 # ✅ WebDriver 설정 (Headless 모드 추가)
 def setup_driver():
@@ -19,7 +43,7 @@ def setup_driver():
     chrome_options.add_argument("--disable-gpu")  # GPU 가속 비활성화 (리눅스 환경에서 필요)
 
     driver = webdriver.Chrome(options=chrome_options)
-    driver.get('https://cubex.seowoninfo.com/auth')
+    driver.get(URL)
     driver.maximize_window()
     return driver
 
@@ -64,7 +88,7 @@ def test_login_failure(driver, username, password, test_type):
         wait_and_send_keys(driver, By.ID, "id", username)
         wait_and_send_keys(driver, By.ID, "password", password)
         wait_and_click(driver, By.XPATH, "//button[@type='submit']")
-        wait_and_click(driver, By.XPATH, "//button[@type='button']//span[contains(text(), '확인')]")
+        wait_and_click(driver, By.XPATH, "//button[contains(., '확인')]")
         WebDriverWait(driver, 10).until(EC.url_contains('auth'))
         print(f"✅ 로그인 실패 테스트 성공: {test_type}")
     except Exception as e:
@@ -85,10 +109,15 @@ def main():
         test_login_failure(driver, "lshadmin", "1234qwe!@", "비밀번호 오입력")
     
     except Exception as e:
-        p
+        print(f"❌ 테스트 실패 {repr(e)}")
 
+    finally:
+        driver.quit()
+        print("✅ WebDriver 종료 완료")
 
-
+# ✅ 실행
+if __name__ == "__main__":
+    main()
 
 
 
