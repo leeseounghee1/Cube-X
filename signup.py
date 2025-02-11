@@ -1,4 +1,6 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -6,8 +8,18 @@ import random
 import string
 import time
 
-# 드라이버 설정
-driver = webdriver.Chrome()
+# ✅ Chrome 옵션 설정 (Headless 모드 추가)
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # 헤드리스 모드 (GUI 없이 실행)
+chrome_options.add_argument("--no-sandbox")  # 샌드박스 모드 비활성화 (CI/CD 환경에서 필요)
+chrome_options.add_argument("--disable-dev-shm-usage")  # /dev/shm 파티션 문제 해결
+chrome_options.add_argument("--window-size=1920x1080")  # 화면 크기 설정
+chrome_options.add_argument("--disable-gpu")  # GPU 가속 비활성화 (리눅스 환경에서 필요)
+
+# ✅ WebDriver 실행 (헤드리스 모드 적용)
+driver = webdriver.Chrome(options=chrome_options)
+
+# ✅ 웹사이트 이동
 driver.get('https://cubex.seowoninfo.com/auth')
 driver.maximize_window()
 
@@ -42,12 +54,19 @@ def generate_random_contact():
     fixed_prefix = "" # 앞자리 고정
     return fixed_prefix 
 
-# 랜덤 이메일 생성 함수(영어 + 숫자).
+# 랜덤 이메일 생성 함수(영어 + 숫자)
 def generate_random_email():
     prefix = ''.join(random.choice(string.ascii_letters + string.digits)for _ in range(5))
     domain = "seowoninfo.com"
     return f"{prefix}@{domain}"
     
+    
+
+    
+
+
+
+
 # 공통 요소 함수
 def wait_and_click(driver, by, value):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((by, value))).click()
@@ -77,6 +96,7 @@ def click_approval_buttons(drvier):
     except Exception as e:
         print("실패")
  
+
 try:
     # 회원가입 버튼 클릭
     wait_and_click(driver, By.XPATH, "//a[@href='/auth/sign-up']")
@@ -146,7 +166,9 @@ try:
     wait_and_click(driver, By.XPATH, "//input[@type='checkbox']")
    # 승인 버튼 클릭 (팝업 포함)
     click_approval_buttons(driver)
+
     print("✅ 가입 요청 승인 완료")
+
 
     #관리자 계정 로그아웃
     login_icon = driver.find_element(By. XPATH, "//button[@type='button']//span[contains(@class, 'i-bi:person-circle')]")
@@ -156,6 +178,8 @@ try:
     wait_and_click(driver, By.XPATH, "//span[contains(text(), '확인')]")
     print("✅ 관리자 계정 로그아웃 완료")
 
+    
+    
     #회원가입한 계정 정보 저장
     signed_up_id = random_id
     signed_up_password = random_password
@@ -165,6 +189,7 @@ try:
     wait_and_send_keys(driver, By.ID, "password", signed_up_password)
     wait_and_click(driver, By.XPATH, "//button[@type='submit']")
     print("✅ 회원가입한 계정 로그인 성공")
+
 
 except Exception as e:
     print(f"오류 발생: {e}")
